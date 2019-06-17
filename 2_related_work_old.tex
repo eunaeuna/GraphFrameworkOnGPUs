@@ -1,0 +1,183 @@
+Large-scale graph processing is extremely challenging.  To achieve maximum performance for a given graph, whether running purely on a CPU or accelerated via GPU, based on the application or data of interest, properly selecting a hardware system and programming model is essential.  One can either implement the latter entirely from scratch or use an existing framework with a rich application programming interface (API).
+
+If one does not use a framework, there are many languages, libraries, and language extensions (\emph{i.e.}, directives) that can be used to implement graph processing algorithms. Examples of such
+languages include MPI, cilk, C++ AMP (Accelerated Massive Parallelism) or CUDA.  Libraries include TBB, SGPU2 and Thrust while the available directives include OpenMP and OpenACC\cite{edwards2014kokkos}.
+
+However, there are a plethora of benefits of using a graph framework instead of starting from scratch, \emph{i.e.},
+\begin{itemize}
+%    \item Frameworks can load many different types of graph data formats into a standard internal format particular to that framework, eliminating the need to custom-develop import libraries.
+    \item Frameworks can provide productivity to users to extract their applications of interest with none or little programming efforts without sacrificing performance.
+    \item Frameworks offer basic functionality for loading many different types of graphs.
+    \item The framework is likely optimized for particular hardware platforms for efficiency; \emph{e.g.}, using shared memory, distributed memory, and particular CPU or GPU architectures.
+    \item The programming model for the framework fits closely to particular set of application %problems of interest.
+    \item Complicated issues such as thread synchronization and hardware utilization are already considered.
+    \item Many fundamental algorithms are already provided as part of a given framework.
+%    \item Frameworks are often independent of the language one wishes to develop in.
+\end{itemize}
+
+%The remainder of this section describes various graph framework hardware architectures and programming models for large-scale graph processing.
+
+\subsection{Hardware Architectures}
+There are several different ways to categorize different graph frameworks in terms of their hardware architectures; in the most general terms, they may be divided up into two large categories: the types of memory systems used and the types of processing architectures used.  
+
+\subsubsection{Memory Systems}
+Most frameworks use either distributed memory systems (\emph{e.g.}, MPI) sometimes referred to as shared-nothing systems or 
+%or standalone, 
+shared-memory systems. Shared-memory systems allow for such features such as fine-grained synchronization for thread-level parallelism. Frameworks using distributed memory systems include PowerGraph\cite{180251}, Pregel\cite{Malewicz:2010:PSL:1807167.1807184}, and GraphX\cite{gonzalez2014graphx}; while frameworks that use large shared-memory systems include Galois and Ligra\cite{shun2013ligra}. There are also frameworks that can operate using either memory model, such as GraphLab\cite{Low:2012:DGF:2212351.2212354} and GraphMat\cite{Sundaram:2015:GHP:2809974.2809983}.
+
+\subsubsection{Processing Architectures}
+[Euna] rewrite this part
+As for hardware architectures, graph frameworks either execute using a general-purpose CPU, a GPU, or a hybrid of the two.  For example, Ligra, GapBS, STINGER, Galois, NetworkX, iGraph, and GraphMat run using a regular CPU, while many others rely on GPUs, such as cuSHA, cuSTINGER, Hornet, cuGraph (formerly NVGraph), and Gunrock. Totem is a graph framework that uses a hybrid processor architecture.
+
+\subsection{Programming Models}
+The underlying programming models for graph frameworks may be categorized in several over-arching approaches, which will be discussed in turn:
+\begin{itemize}
+%    \item MapReduce-based models
+%    \item Bulk Synchronous Parallel(BSP)/asynchronous models
+    \item Synchronization type
+    \item Vertex-centric/Edge-centric/Data-Centric model
+    \item Linear-algebra-based model
+    \item Gather-Apply-Scatter (GAS) model
+    \item Push/Pull method
+\end{itemize}
+
+% \subsubsection{MapReduce}
+% MapReduce is a programming model introduced by Google for scalability when partitioning work across a distributed system.  It consists of two steps, given a single task:
+% \begin{itemize}
+%     \item \emph{Map} - Partitions a task and distributes it to several compute nodes for parallel processing.
+%     \item \emph{Reduce} - Collects the results of the distributed task execution to produce a single result.
+% \end{itemize}
+% Frameworks that use MapReduce include Hadoop, Pegasus, and Haloop.
+
+% However, MapReduce has shortcomings. It does not operate well on graph data that is ``irregular;'' \emph{i.e.}, a graph that may be sparse in terms of edge connections at certain groups of nodes, while at other groups of nodes the edge connections may be very dense. Since MapReduce does not take these node communication issues into account, load-balancing becomes difficult.  For example, processing of one partition may finish much more quickly than another depending on the complexity of the communication between nodes. In addition, many graph algorithms iterate until they reach convergence; such an execution model does not map well to MapReduce's model.
+
+%[Euna] Combining BSP with vertex-centric??
+%\subsubsection{Bulk Synchronous Parallel(BSP) and asynchronous models
+\subsubsection{Synchronization type}
+Google introduced Pregel\cite{pregel} to use Bulk Synchronous Parallel(BSP) processing on vertices to mitigate the shortcomings of MapReduce-based graph processing such as poor memory locality and load-balancing. This paradigm improves performance despite of characteristics of graph computation; irregularity of graph data and iterative computation. For instance, a vertex programming BSP consists of several steps for a given single task; 1) breaking down an algorithm into super-steps. 2) computing the local update on a vertex. 3) retrieving a message from the previous super-step and sending messages to a super-step 4) changing the states of outgoing edges.
+%BSP consists of four steps, given a single task: 
+% \begin{itemize}
+%     \item breaking an algorithm into super-steps.
+%     \item computing the local update on a vertex
+%     \item retrieving a message from the previous super-step and sending messages to a super-step
+%     \item changing the states of outgoing edges
+% \end{itemize}
+
+
+Apache Giraph\cite{giraph} is an open source framework implementing the BSP approach and GraphX\cite{xin2013graphx} supports Pregel runtime. In order to reduce the synchronization overhead, there is block-based mechanism which reduces the iterations by executing algorithms within a block during BSP synchronization. A BSP model is easy to implement and and simple to use, however, the inefficiency from global synchronization and dealing with stale messages induced to come up with the asynchronous parallel (AP) model that expended a BSP model. Giraph\cite{giraph}, GraphLab\cite{Low:2012:DGF:2212351.2212354} and PowerGraph\cite{powergraph} support both BSP and (barrier-less) AP model.
+
+\subsubsection{Vertex-centric model}
+\label{subsub:vertex}
+Vertex-centric models use graph vertices as their quantum of execution("think like a vertex"). The idea is that a compute function is executed by a given vertex upon a single algorithm iteration over a given graph. Vertex-centric is one of the most popular models and a variety of graph analytic frameworks such as Giraph and GraphLab uses this model to process graph data due to its simple and powerful behavior\cite{Satish:2014:NMG:2588555.2610518}. 
+%There are several frameworks that use a vertex-centric model for their graph data. 
+The first programming model to use this concept is Google Pregel, which is used to compute PageRank results.
+
+Ligra\cite{shun2013ligra} and Gunrock\cite{wang2015gunrock} are frameworks for implementing graph traversals through a small set of highly optimized operators which are suitable for a wide range of applications. By thinking about the parallelism available in a specific as a ``wave'' of vertices or edges, programmers can map functions to the wave. These wave consist of two phases: 1) a filter phase which checks if the vertex or edge should be part of the wave and 2) an apply phase where the function is applied to the vertex or the edge. While this approach requires traversing each vertex or edge twice, in practice the frameworks offer good performance. Perhaps the greatest restrictions of these wave-like graph primitives is that algorithm designers are required to think in a two phase fashion whereas traditional algorithms usually do not require two phases.
+
+[Euna] check this part: Galois is task-based and can be both vertex and edge... 
+The Galois framework\cite{pingali2011tao} %is based on [???]
+which uses an operator based formulation that separates the operation from the actual parallel runtime. Galois’s runtime is responsible for dispatching the various work units to available multi-processors. Similar to Gunrock and Ligra, algorithm designers using Galois are required to rethink their application using the Galois operators to ensure that the runtime can detect when tasks are available for execution.
+
+STINGER\cite{stinger-inserts} is a dynamic graph data structure and framework that enables implementing both static graph and dynamic graph algorithms. 
+%GT-STINGER [] is an implementation of the STINGER API. 
+GT-STINGER offers a set of graph primitives that enable traversing the graph. 
+%While Ligra and Gunrock require the programmer to use a two-phase wave, GT-STINGER primitives do not. 
+This comes at the expense of additional load-balancing required by the programmer, which is not required in the other libraries.
+
+%Ligra and Galois target CPU systems and Gunrock and Medusa are GPU-based libraries. Ligra, Gunrock, and Galois target static graph algorithms and STINGER can be used for both static and dynamic graphs.
+
+\subsubsection{Edge-centric model}
+\label{subsub:edge}
+The edge-centric programming paradigm is first introduced in X-Stream\cite{roy2013x}. In contrast to the vertex-centric model, it processes edges in a streaming-like form with three steps: 1) retrieve information from each source vertex, 2) execute algorithm on source vertex, and 3) update results at the destination vertices via the edges associated with the source vertex.
+An edge-centric model may produce better performance as a result of improved cache efficiency, which is a downside of the vertex-centric model due to its natural random memory access pattern. However, the total amount of computation on edges in each iteration may be increased, causing the edge-centric model to be more inefficient than the vertex-centric model when using algorithms that traverse a graph, which only has frontier vertices active. There has been work done exploring the performance benefits of pre-processing to increase the cache locality while showing the trade-offs involved \cite{203219}. 
+
+\subsubsection{Data-centric model}
+\label{subsub:data}
+BSP on frontiers (vertices or edges); four operators (advance, filter, segmented intersection, compute) 
+
+
+[Joe, Alex]
+\subsubsection{Linear-algebra-based models}
+% [Euna]
+SPMV based models can have benefits from leveraging mathematical knowledge and optimized techniques of decades. GraphMat\cite{Sundaram:2015:GHP:2809974.2809983} provides vertex programming for frontend and exploits the graph in sparse matrix in the backend to achieve performance while encapsulating SPMV primitives to users. Other matrix based graph frameworks like CombBLAS\cite{Buluc01112011} and PEGASUS\cite{Kang:2009:PPG:1674659.1677058} expose matrix primitives to users.
+
+Linear-algebra-based models attempt to leverage existing work in sparse linear algebra and the isomorphism between simple edge weighted graphs and matrices. This vertex/edge-centric programming model uses well defined building blocks, in particular sparse multiplication vectors (SPMVs) and the extension to the semi-ring form of SPMV. These models can take advantage of the known methods for memory allocation, load balancing and distribution of work using MPI, but they do not adapt well to all graph algorithms without specialization of the SPMV. 
+
+An example of such specialization includes the SPMV in cuGraph, which uses a merge-path based load balancing method for all semi-rings. cuGraph is most effective on global problems such as PageRank, or triangle counting, which examines the entire graph. The work-efficient SPMSPV is necessary to get good performance on BFS and SSSP using the linear algebra approach.  
+
+\subsubsection{Gather-Apply-Scatter (GAS) model}
+%Edge-centric models, in contrast to vertex-centric models, typically use the Gather-Apply-Scatter 
+%(GAS) model in contrast to executing a function on every vertex. 
+%follows a scatter-gather programming model. 
+Gather-Apply-Scatter (GAS) model, another one of the most popular programming approaches based on scatter-gather method, can incorporated with vertex/edge-centric models or sparse matrix computation. GAS algorithms normally consist of three main phases:
+\begin{enumerate}
+\item Each vertex receives a set of messages from its neighbors (Gather)
+\item The vertex processes the messages (Apply)
+\item The edge is traversed to compute an algorithm specific update in source vertex and to send an update to its neighbor (Scatter)
+\end{enumerate}
+
+These three phases work in a synchronized fashion. While each of these phases can be thought of as a graph primitive, a deeper inspection of many algorithms implemented using this programming model suggest that additional lower level graph primitives can be used to build these higher level primitives. For example, in the Apply stage, a vertex might be go through all the messages obtained via its edges and apply various functions to each message. Furthermore, as the vertices communicate with each other via messages and vertices do not access their neighbors directly, the GAS model is extremely scalable for some problems and can be implemented in a distributed environment. For example, GraphX\cite{xin2013graphx}, GraphLab\cite{low2012distributed} and X-Stream work in distributed environments and GasCL\cite{che2014gascl} and cuSHA\cite{cusha} are GAS-based frameworks targeting accelerators. cuSHA and VertexAPI2 are for GAS model based on GPUs.
+%Note that some of these frameworks, such as GraphX, use a custom data structure for the graph while cuSHA and GasCL use more standard data structures like CSR and COO. 
+The GAS programming model does not dictate the underlying data structure, however, it does dictate the legal set of operations. 
+
+\subsubsection{Push/Pull method}
+%Ligra (Vertex-centric push-pull programming) and GraphMat (Sparse Matrix operations with Vertex-centric GAS abstraction)
+%Pregel, Giraph (Vertex-centric BSP model) and GraphLab, PowerGraph (sync/async GAS) 
+Irregular memory access pattern of graph processing makes it hard to utilize the hardware resources. Push and Pull methods are used by combining with other approaches to improve resource efficiency such as cache locality. For example, a push/pull vertex-centric model assign threads on either frontiers' neighbors via out-going edges (push) for transmit an update, or neighbor vertices via in-coming edges (pull) to modify their own information. Push operation requires atomic operation which can be a performance barrier, while it is not mandatory in pull operation \cite{Lakhotia:2019:GCM:3293883.3299108}. 
+
+
+\subsection{Related Work}
+\label{sub:related-work}
+
+Open Source Graph Database performance evaluation\cite{mccoll2014performance} includes user experience, developer experience as well as performance evaluation for BFS, CC, PR and edge update rate but mostly for X86/XMT systems.
+
+There have been attempts in the past to compare various graph frameworks in terms of their individual performance.
+
+There also have been proposals for benchmarks for graph frameworks.
+Graph 500 is designed for hardware architecture and their software system suggestion by evaluating super computers. Evaluations use BFS and PR with synthetic graph data generated by Kronecker graph generator\cite{Leskovec:2010:KGA:1756006.1756039}. The execution time includes graph building, loading as well as algorithm processing time.
+GAP Benchmark Suite\cite{DBLP:journals/corr/BeamerAP15}is for standardizing graph processing evaluations including specifying six graph kernels(BFS, PR, CC, TC, BC), five input graphs(Twitter, Web:sk-2005, Road, Kron, Urand), evaluation methodologies as well as optimized reference implementation with various settings. The assumption is graph used is loaded in the shared memory.
+Again, our work is not proposing benchmark or providing performance comparison. Other benchmarks can be incorporated as an extension of our work such as having 64 and 16 different sources for BFS and BC respectively as GAP suggested. %and SSSP
+WGB\cite{Ammar2013WGBTA} includes graph data generation as time-evolving graphs with power-law distribution and workload specification for RDF(Resource Description Framework) stores.
+
+Existing graph benchmarks for HPC mentioned above do not have hardware restrictions but have not used much with GPU frameworks.
+
+Different processing architectures produce different challenges and require specific knowledge for corresponding hardware and software. For the case of GPU architectures, some of these programming challenges to deal with include the following:
+\begin{itemize}
+    \item Load balancing for massive parallelism
+    \item Limited memory size, whether shared or local
+    \item Thread contention
+    \item Effective utilization of the GPU memory hierarchy
+    \item Support of multiple GPUs
+\end{itemize}
+
+As for the contribution of this work, we compare features, constraints, and other capabilities and drawbacks of various \emph{GPU-based} graph frameworks.
+
+The remainder of the paper is organized as follows: Section \ref{sec:gpu-framework} provides an overview of the GPU graph framework; Section \ref{sec:benchmark-method} describes the evaluation methodology for a graph benchmark; Section \ref{sec:experiment-setup} describes our experimental setup; and Section \ref{sec:experiment-results} describes and discusses our experimental results.
+
+%%Graph frameworks are designed for different hardware systems
+%%The target for Galois and Ligra is large shared memory system on CPUs.
+%%cuSha, Gunrock, Hornet, kokkos, NvGraph are on GPUs.
+%%Giraph and GraphLab are designed for distributed systems (multi-node)
+%%GraphLab and GraphMat can run in a single node or distributed setting.
+%%Totem is hybrid on CPU and GPU.
+
+%%\subsection{Graph Primitives and Programming Models}
+%%Linear algebra based, SPMV - GraphMat, NvGraph
+%%These packages attempt to leverage existing work in sparse linear algebra and the isomorphism between simple edge weighted graphs and matrices. This vertex/edge centric programming model uses well defined building blocks, in particular sparse multiplication vectors (SPMVs), with extension to the semi-ring form of SPMV heavily used. It can take advantage of the known methods for memory allocation, load balancing and distribution of work using MPI, but does not adapt well to all graph algorithms without specialization of the SPMV. The SPMV in nvGraph uses a merge-path based load balancing method for all semi-rings.  The work-efficient SPMSPV is necessary to get good performance on BFS and SSSP using the linear algebra approach.  NvGraph is most effective on global problems such as PageRank, or triangle counting which treat the entire graph.
+
+%%Performance: hardware choice + programming model + data structure + algorithm
+
+%%GAS:VertexAPI2 GAS:MapGraph GAS:CuSHA
+
+%%Edge Centric: Another extremely popular programming method for implementing graph algorithms is the Gather-Apply-Scatter model, also referred to as GAS. GAS algorithms consist of three main phases in which, 1) each vertex receives a set of messages from its neighbors (Gather), 2) the vertex processes the messages (Apply), and 3) sends an update to its neighbor (Scatter). These three phases work in synchronized fashion. While each of these phases can be thought of as a graph primitive, a deeper inspection of many algorithms implemented using this programming model suggest that additional lower level graph primitives can be used to build these higher level primitive. For example, in the apply stage a vertex might be go through all its messages and apply various functions to each message (aka edge). Furthermore, as the vertices communicate with each other via messages and vertices do not access their neighbors directly, the GAS model is extremely scalable and can be implemented in a distributed environment. For example, GraphX\cite{xin2013graphx}, GraphLab\cite{low2012distributed}, X-Stream\cite{roy2013x} are three such distributed frameworks. GasCL\cite{che2014gascl} and cuSHA\cite{cusha} are GAS based frameworks targeting accelerators. Note, some of these frameworks such GraphX use a custom data structure for the graph while cuSHA and GasCL use more standard data structures like CSR and COO (discussed in the next subsection). The GAS programming model does not dictate the underlying data structure, however, it does dictate the legal set of operations.
+
+%%\subsection{CPU Frameworks} - Ligra, GapBS, STINGER, Galois, NetworkX, iGraph, GraphMat
+%%\subsection{GPU Frameworks} - high level, cuSHA, cuSTINGER, Hornet, NVGraph, Gunrock 
+%%\subsection{Distributed} - spark \& graphx, GraphLab, combBLAS
+%%\subsection{Programming Models} - Vertex centric, BLAS, GAS (Gather Apply Scatter)
+%%
+%%(addition)
+%%beamer
+%%Graph Algorithm Platform (GAP) Benchmark Suite to help the community improve graph processing evaluations through standardization. in-house implementation suite of graph kernels on x86/ARM/SPARC/RISC-V system vs. GPU + framework benefits like data structure
+
+

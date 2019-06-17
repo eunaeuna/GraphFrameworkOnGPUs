@@ -1,0 +1,66 @@
+% \begin{scriptsize}
+% \begin{table*}[t]
+% %\vspace*{-0.1 cm}
+% \caption{%GPU P100 and V100 are used in our experiments.
+% Each GPU used for the experiments tested for two different form factors: PCI-E and SXM-2.% Each of the form factors has a different power limitation. 
+% }
+% \centering
+% %\vspace*{-0.1 cm}
+% \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|} \hline 
+% %\begin{tabular}{ |p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}|p{1cm}| } \hline 
+% %\begin{tabular}{ |p{0.5cm}|p{0.4cm}|p{0.4cm}|p{0.5cm}|p{0.5cm}|p{0.5cm}|p{0.5cm}|p{0.7cm}|p{0.6cm}| } \hline 
+% Processor & Micro arch. & SM & SP (/SM) & Total SPs & DRAM Size & DRAM Type & Form factor & Power  \\ \hline
+% P100  & Pascal     & 56    & 64 & 3854 & 16GB    & HBM2 & PCI-E / SXM-2 & 250W / 300W\\  \hline 
+% % GPU-CUDA     & P100  & Pascal     & 56    & 64 & 3854 & 16GB    & HBM2 & SXM-2 & 250W\\  \hline 
+% V100  & Volta     & 80    & 64 & 5120 & 16GB    & HBM2 & PCI-E / SXM-2 & 250W / 300W \\  \hline 
+% % GPU-CUDA     & V100  & Volta     & 80    & 64 & 5120 & 16GB    & HBM2 & SXM-2 & 300W \\  \hline 
+% V100  & Volta     & 80    & 64 & 5120 & 32GB    & HBM2 & PCI-E / SXM-2 & 250W / 300W \\  \hline 
+% % GPU-CUDA     & V100  & Volta     & 80    & 64 & 5120 & 32GB    & HBM2 & SXM-2 & 300W \\  \hline 
+% \end{tabular}
+% \vspace*{0.2 cm}
+% \label{tab:gpu-cpu-systems}
+% \end{table*}
+% %[Euna] adding bandwidth, flops info, cuda version....
+% \end{scriptsize}
+
+\begin{scriptsize}
+\begin{table*}[htbp]
+\begin{threeparttable}
+ \caption{[TBD] Description of six GPU systems used for the experiments}
+ \label{tab:gpu-cpu-systems}
+ \centering
+\begin{tabular}{qccccccccccc}
+     \toprule
+    % Processor & Micro arch. & SM & SP (/SM) & Total SPs & DRAM Size & DRAM Type & Form factor & Power  
+    \multicolumn{1}{c}{System$^a$} &
+    \multicolumn{1}{c}{CPU} & 
+    \multicolumn{1}{c}{Form factor} &
+    \multicolumn{1}{c}{Processor} & 
+    \multicolumn{1}{c}{M.Arch.} & 
+    \multicolumn{1}{c}{SMs} & 
+    \multicolumn{1}{c}{SP/SM} & 
+    \multicolumn{1}{c}{Total SPs} &
+    \multicolumn{1}{c}{DRAM Size} & 
+    \multicolumn{1}{c}{DRAM Type} & 
+    \multicolumn{1}{c}{Power} \\
+\midrule
+    P100\_16GB\_PCI & 2.30GHz$^b$ & PCI-E & P100 & Pascal & 56 & 64 & 3854 & 16GB & HBM2 & 250W \\ 
+    P100\_16GB\_SXM & (TBD) & SXM-2 & P100 & Pascal & 56 & 64 & 3854 & 16GB & HBM2 & 300W \\ 
+    V100\_16GB\_PCI & 2.30GHz$^b$ & PCI-E & V100 & Volta  & 80 & 64 & 5120 & 32GB & HBM2 & 250W \\ 
+    V100\_16GB\_SXM & 2.20GHz$^c$ & SXM-2 & V100 & Volta  & 80 & 64 & 5120 & 32GB& HBM2 &  300W \\ 
+    V100\_32GB\_PCI & 2.30GHz$^b$ & PCI-E & V100 & Volta  & 80 & 64 & 5120 & 32GB& HBM2 &  250W \\ 
+    V100\_32GB\_SXM & 2.20GHz$^c$ & SXM-2 & V100 & Volta  & 80 & 64 & 5120 & 32GB& HBM2 &  300W \\
+     \bottomrule
+   \end{tabular}
+     \begin{tablenotes}
+      \tiny
+      \item {
+      $^a$ Device driver version 418.67 and operating system CentOS Linux 7 for all systems, 
+      $^b$ Intel(R) Xeon(R) CPU E5-2698 v3 @ 2.30GHz with cache 40960KB, 
+      $^c$ Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz with cache 51200KB}
+    \end{tablenotes}
+  \end{threeparttable}
+ \end{table*}
+\end{scriptsize}
+%
+

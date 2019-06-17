@@ -1,0 +1,167 @@
+\begin{table}[t]
+\begin{center}
+\tiny
+
+% time - (ms)
+
+% Another combination of values
+\setlength\dashlinedash{0.2pt}
+\setlength\dashlinegap{1.5pt}
+\setlength\arrayrulewidth{0.3pt}
+
+\caption{BFS}
+% \begin{tabular}{|l|c|c|c|} \hline
+%  Name             & Hornet & Gunrock & nvGraph \\  \hline \hline
+%  cit-Patents      &   78.1 &  0.4690 &  \\ \hline 
+%  soc-LiveJournal1 &  169.7 &  &  \\ \hline
+%  uk-2002          &  793.3 &  &   \\ \hline
+%  soc-twitter-2010 & 1464.1 &  &   \\ \hline
+%  uk-2006          & 2077.5 &  &   \\ \hline
+%  kron21 &  &  &   \\ \hline
+%  kron24 &  &  &   \\ \hline
+%  RMAT24 &  &  &   \\ \hline
+% \end{tabular}
+\begin{tabular}{l|r|r|r|r|r|r|}
+\cline{2-7}
+% topdown BFS
+% root: the largest degree node
+                                          & \multicolumn{3}{c|}{P100}                                                                 & \multicolumn{3}{c|}{V100}                                                                 \\ \cline{2-7} 
+                                          & \multicolumn{1}{c|}{Hornet} & \multicolumn{1}{c|}{Gunrock} & \multicolumn{1}{c|}{nvGraph} & \multicolumn{1}{c|}{Hornet} & \multicolumn{1}{c|}{Gunrock} & \multicolumn{1}{c|}{nvGraph} \\ \hline
+% Hornet: @@ Root is 3569341, max (out)degree is 770, Using highest degree (770), vertex: 3569341
+\multicolumn{1}{|l|}{cit-Patents}                   &2.0    &1.8821&         &12.2&2.1060&         \\ \hdashline
+% Hornet: @@ Root is 2514765, max (out)degree is 793. Using highest degree (793), vertex: 2514765
+\multicolumn{1}{|l|}{cit-Patents-Undirected}        &11.0   &13.9289&         &23.7&11.5259&         \\ \hline
+% Hornet: @@ Root is 10009, max (out)degree is 20293. Using highest degree (20292), vertex: 10009
+    \multicolumn{1}{|l|}{soc-LiveJournal1}              &11.4   &15.5180&         &24.0 &11.9581&         \\ \hdashline
+% Hornet: @@ Root is 10009, max (out)degree is 20334. Using highest degree (20333), vertex: 10009
+\multicolumn{1}{|l|}{soc-LiveJournal1-Undirected}   &12.9   &21.5049&         &25.1 &16.2599&         \\ \hline
+% Hornet: @@ Root is 10117014, max (out)degree is 156282. Using highest degree (698112), vertex: 10119000
+\multicolumn{1}{|l|}{soc-twitter-2010-Directed}     &39.3   &126.3881&         &59.9&108.2900&         \\ \hdashline
+%twitter graph is an undirected graph
+% Hornet: @@ Root is 10119000, max (out)degree is 698112. Using highest degree (698112), vertex: 10119000
+\multicolumn{1}{|l|}{soc-twitter-2010-Undirected}   &72.8   &126.1981&         &93.0&107.8551&         \\ \hline
+% Hornet: @@ Root is 15353974, max (out)degree is 2450. Using highest degree (2449), vertex: 15353974
+\multicolumn{1}{|l|}{uk-2002}                       &21.1   &24.5230&         &34.7&17.2870&         \\ \hdashline
+% Hornet: @@ Root is 17159799, max (out)degree is 194955. Using highest degree (194955), vertex: 17159799
+\multicolumn{1}{|l|}{uk-2002-Undirected}            &29.3   &41.4600&         &33.2&26.6709&         \\ \hline
+% Hornet: @@ Root is 21049532, max (out)degree is 5213. Using highest degree (5213), vertex: 21049532
+%Total enqueue vertices: 5,632 while it is 41,285,497 in undirected graph case....
+\multicolumn{1}{|l|}{uk-2005}                       &1.6    &1.5309&         &10.4&1.5390&         \\ \hdashline
+% Hornet: @@ Root is 34054380, max (out)degree is 1776858. Using highest degree (1776858), vertex: 34054380
+\multicolumn{1}{|l|}{uk-2005-Undirected}            &104.0  &-&         &67.1&70.0989&         \\ \hline
+% Hornet: @@ Root is 431614, max (out)degree is 129699. Using highest degree (213904), vertex: 1930586
+\multicolumn{1}{|l|}{kron-g500-logn21}              &12.2   &42.9871&         &21.4&32.8810&         \\ \hdashline
+% Hornet: @@ Root is 1930586, max (out)degree is 213905. Using highest degree (213904), vertex: 1930586
+\multicolumn{1}{|l|}{kron-g500-logn21-Undirected}   &19.0   &43.0100&         &25.7 &32.7849&         \\ \hline
+% Hornet: 
+\multicolumn{1}{|l|}{twitter}                        &      &         &         &        &506.3341&         \\ \hdashline
+% Hornet: 
+\multicolumn{1}{|l|}{twitter-Undirected}             &      &         &         &        &880.2502&         \\ \hline
+% Hornet: 
+\multicolumn{1}{|l|}{kron24}                        &       &         &         &        &         &         \\ \hdashline
+% Hornet: 
+\multicolumn{1}{|l|}{kron24-Undirected}             &       &         &         &        &         &         \\ \hline
+% Hornet: 
+\multicolumn{1}{|l|}{rmat24}                        &       &         &         &        &         &         \\ % Hornet: 
+\hdashline
+\multicolumn{1}{|l|}{rmat24-Undirected}             &       &         &         &        &         &         \\ \hline
+\end{tabular}
+
+\caption{PageRank}
+\begin{tabular}{l|r|r|r|r|r|r|}
+\cline{2-7}
+                                          & \multicolumn{3}{c|}{P100}                                                                 & \multicolumn{3}{c|}{V100}                                                                 \\ \cline{2-7} 
+                                          & \multicolumn{1}{c|}{Hornet} & \multicolumn{1}{c|}{Gunrock} & \multicolumn{1}{c|}{nvGraph} & \multicolumn{1}{c|}{Hornet} & \multicolumn{1}{c|}{Gunrock} & \multicolumn{1}{c|}{nvGraph} \\ \hline
+\multicolumn{1}{|l|}{cit-Patents}                   &195.7  &229.0001 &         &21.5 &214.0269&         \\ \hdashline
+\multicolumn{1}{|l|}{cit-Patents-Undirected}        &       &229.2032 &         &        &211.5700&         \\ \hline
+\multicolumn{1}{|l|}{soc-LiveJournal1}              &186.1  &310.5922&         &36.6&249.5329&         \\ \hdashline
+\multicolumn{1}{|l|}{soc-LiveJournal1-Undirected}   &       &312.5820&        &         &256.9180&  \\ \hline
+\multicolumn{1}{|l|}{soc-twitter-2010-Directed}     &-      &1992.9981&         &        &1844.5671&         \\ \hdashline
+%twitter graph is an undirected graph
+\multicolumn{1}{|l|}{soc-twitter-2010-Undirected}   &  &1992.1548&         &505.2&1845.3441&         \\ \hline
+\multicolumn{1}{|l|}{uk-2002}                       &1550.5  &696.8338&         &74.5&311.2578&         \\ \hdashline
+\multicolumn{1}{|l|}{uk-2002-Undirected}            &  &694.2730&        &         &307.5459& \\ \hline
+\multicolumn{1}{|l|}{uk-2005}                       &- &2203.2390&         &202.0&995.2600&         \\ \hdashline
+\multicolumn{1}{|l|}{uk-2005-Undirected}            &  &2198.7331&        &         &985.6510& \\ \hline
+\multicolumn{1}{|l|}{kron-g500-logn21}              &173.8 &533.4880&         &87.7&374.2170&         \\ \hdashline
+\multicolumn{1}{|l|}{kron-g500-logn21-Undirected}   &   &533.2749&         &        &376.9481&         \\ \hline
+\multicolumn{1}{|l|}{twitter}                        &      &         &         &2578.7&14968.8210&         \\ \hdashline
+\multicolumn{1}{|l|}{twitter-Undirected}             &      &         &         &        &22965.3111&         \\ \hline
+\multicolumn{1}{|l|}{kron24}                        &       &         &         &        &         &         \\ \hdashline
+\multicolumn{1}{|l|}{kron24-Undirected}             &       &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{rmat24}                        &       &         &         &        &         &         \\ \hdashline
+\multicolumn{1}{|l|}{rmat24-Undirected}             &       &         &         &        &         &         \\ \hline
+\end{tabular}
+
+[Euna] Gunrock PR implementation how it treats undirected/directed option...
+
+\caption{Triangle Counting}
+\begin{tabular}{l|r|r|r|r|r|r|}
+\cline{2-7}
+% topdown BFS
+% root: the largest degree node
+                                          & \multicolumn{3}{c|}{P100}                                                                 & \multicolumn{3}{c|}{V100}                                                                 \\ \cline{2-7} 
+                                          & \multicolumn{1}{c|}{Hornet} & \multicolumn{1}{c|}{Gunrock} & \multicolumn{1}{c|}{nvGraph} & \multicolumn{1}{c|}{Hornet} & \multicolumn{1}{c|}{Gunrock} & \multicolumn{1}{c|}{nvGraph} \\ \hline
+\multicolumn{1}{|l|}{cit-Patents}         &52.12106&         &         &47.21869&   &         \\ \hline %\hdashline
+%\multicolumn{1}{|l|}{cit-Patents-Undirected}      &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{soc-LiveJournal1}    &5356.91504&         &         &97.90771&     &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{soc-LiveJournal1-Undirected} &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{soc-twitter-2010}    &10568.96973&         &         &2349.68262&    &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{soc-twitter-2010-Directed} &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{uk-2002}             &752.75061&         &         &423.21817&  &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{uk-2002-Undirected}          &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{uk-2005}             &3303.70190&         &         &1851.72278& &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{uk-2005-Undirected}          &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{kron24}              &        &         &         &        &         &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{kron24-Undirected}           &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{rmat24}              &        &         &         &        &         &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{rmat24-Undirected}           &        &         &         &        &         &         \\ \hline
+\end{tabular}
+
+
+\caption{SSSP - root 0}
+\begin{tabular}{l|l|l|l|l|l|l|}
+\cline{2-7}
+                                          & \multicolumn{3}{c|}{P100}  & \multicolumn{3}{c|}{V100}  \\ \cline{2-7} 
+                                          & Hornet & Gunrock & nvGraph & Hornet & Gunrock & nvGraph \\ \hline
+%Fewer than 5 vertices visited.                                          
+\multicolumn{1}{|l|}{cit-Patents}         &0.8&0.2160&         &9.5&0.3879&         \\ \hline %\hdashline
+%\multicolumn{1}{|l|}{cit-Patents-Undirected}      &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{soc-LiveJournal1}    &295.9&151.8500&         &181.5&128.6480&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{soc-LiveJournal1-Undirected} &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{soc-twitter-2010}    &548.7&146.8382&         &520.3&124.5279&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{soc-twitter-2010-Directed} &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{uk-2002}             &158.2&337.7290&         &313.2&209.4100&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{uk-2002-Undirected}          &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{uk-2005}             &901.1&1573.8940&         &786.2&1026.5688&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{uk-2005-Undirected}          &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{kron24}              &        &         &         &        &         &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{kron24-Undirected}           &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{rmat24}              &        &         &         &        &         &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{rmat24-Undirected}           &        &         &         &        &         &         \\ \hline
+\end{tabular}
+
+\caption{SSSP - root highest degree node}
+\begin{tabular}{l|l|l|l|l|l|l|}
+\cline{2-7}
+                                          & \multicolumn{3}{c|}{P100}  & \multicolumn{3}{c|}{V100}  \\ \cline{2-7} 
+                                          & Hornet & Gunrock & nvGraph & Hornet & Gunrock & nvGraph \\ \hline
+\multicolumn{1}{|l|}{cit-Patents}         &115.1&1.8320&         &150.3&1.7331&         \\ \hline %\hdashline
+%\multicolumn{1}{|l|}{cit-Patents-Undirected}      &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{soc-LiveJournal1}    &369.2&100.4710&         &150.7&73.7929&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{soc-LiveJournal1-Undirected} &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{soc-twitter-2010}    &549.6&153.2900&         &517.5&127.6829&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{soc-twitter-2010-Directed} &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{uk-2002}             &-        &232.1060&         &-        &142.9741&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{uk-2002-Undirected}          &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{uk-2005}             &-        &1.7130&         &-        &2.0652&         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{uk-2005-Undirected}          &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{kron24}              &        &         &         &        &         &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{kron24-Undirected}           &        &         &         &        &         &         \\ \hline
+\multicolumn{1}{|l|}{rmat24}              &        &         &         &        &         &         \\ \hline %\\hdashline
+%\multicolumn{1}{|l|}{rmat24-Undirected}           &        &         &         &        &         &         \\ \hline
+\end{tabular}
+
+\label{tab:graphs}
+\end{center}
+\end{table}

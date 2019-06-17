@@ -1,0 +1,65 @@
+% [Euna] 
+% Shouldn't we mention the reason why we conducted the qualitative and quantitative comparison of
+% 1. chosen five algorithms (BFS, BC, TC, PR and SSSP) 
+% 2. only very large size graphs (ex. uk2005)
+
+% Also why kokos and cuSha were not included..
+% mentioning gunrock and hornet are open-source code and nvgraph also free API library..
+
+% \begin{item}
+% \item Graph is ubiquitous and explain some list of applications
+% \item It is getting bigger
+% \item To solve bigger graphs we need efficient kernel and bigger machines
+% \item Two broader solutions (a) For productivity, modern Enterprise stack (b) For performance, Distributed HPC stack and Extreme threaded systems
+% \item Top 10 in hpc is based on cpu.
+% \item But, top 10 of green hpc is dominated by gpu.
+% \item Hence for processing larger graphs in distributed environment, gpu will be way to go forward
+% \item  Introduce graph on gpu problems
+% \item Introduce early solutions on gpu on graphs for these challenges
+% \item Pitch in the scope and the contributions of this paper.
+% \end{item}
+
+% TODO: Add citations to NetworkX and Igraph, Hadoop and Spark/GraphX 
+% [Euna] citation addition completed
+
+Graphs are ubiquitous and can be found in a wide range of real world applications.
+Many of these problems are sparse and unstructured in nature. Yet, using graphs brings certain structure to these problems and allows for using well-researched graph utilities and tools. Using graphs it is easy and intuitive to create relationships between entities followed by advanced queries. A few domains that use graphs are molecular structures in chemistry, lattice structures in physics, functional connections of brains, web graphs, social networks, and natural language processing.
+
+%With the advent of the internet and ever increasing number of social networks, 
+The ability to analyze larger graphs (also referred to as networks) at significantly higher rates has, in return, created more interest and need for faster and more scalable graph solutions. For some very well-defined problems, distributed solutions can be implemented using Hadoop \cite{White:2009:HDG:1717298} and GraphX \cite{gonzalez2014graphx} (which is an extension of SPARK \cite{zaharia2010spark}). These frameworks are extremely limited to solving problems that fit the bulk synchronous model. Therefore, they cannot be applied to computationally intensive problems as these are not suitable for the bulk synchronous model. In sharp contrast, NetworkX\cite{SciPyProceedings_11} and iGraph\cite{Han:2010:IFC:1920841.1920901} have larger user bases because of their functionality, despite the limited scalability and sequential nature. These frameworks sacrifice efficiency and data scalability for usability.
+
+The HPC community has also spent a lot of time and effort developing various graph frameworks. These typically split between distributed (shared-nothing) systems and shared-memory systems. HPC systems such as the Cray Urika and massive supercomputers such as Titan and Summit have lots of compute, memory, and communication resources available. The irregularity of many of these graph problems and the lack of structure found in most graphs make them especially challenging. This makes designing and implementing good tools for productivity even more difficult. 
+
+In the last decade a plethora of shared-memory graph frameworks have been created focusing on productivity and enabling relatively simple parallelization. Some of these frameworks designed for the CPU include the following: \cite{stinger-tr,shun2013ligra,beamer2015gap,pingali2011tao,Sundaram:2015:GHP:2809974.2809983}. 
+Parallel programming on these shared memory systems is convenient and the capability of these systems to have as much as 8TB of DRAM makes them attractive. Yet, they lack the computational power to efficiently process large graphs with respect to time. 
+
+For this reason, accelerators such as NVIDIA's GPU have become an integral part of shared memory systems. Specifically, GPUs have significantly more computational power than most servers with CPUs, which have higher bandwidth memory. The use of GPUs comes at the cost of having a small amount of shared memory and slow communication bus between the CPU and GPU. Effective use of the NVIDIA GPUs, using the Volta architecture, requires parallelizing with approximately 40,000 threads. 
+Currently, it is possible to obtain a wide range of HPC servers with multiple GPUs: IBM's Power 8 and Power 9 servers can have up to 4 and 6 GPUs, respectively. NVIDIA's DGX-1 and DGX-2 can have up to 8 and 16 GPUs in a single server. These also have a fast communication bus among the GPUs in the form of NVLink and NVSwitch\cite{foley2017ultra}.
+To design a effective graph framework for these multi-GPU servers, we first need to understand the characteristics and capabilities for a single GPU system.
+%what works and what does not work well for a single GPU. 
+
+The focus of this paper is to review several recent graph frameworks and their programming models. This includes considering resource management and constraints such as memory, bandwidth, data layout, memory access pattern, workload mapping, branch divergence, and the scope of their capabilities. For this work, we choose to consider Hornet \cite{green-hornet}, Gunrock \cite{wang2015gunrock}, and cuGraph (formerly nvGraph \cite{nvGraph}). 
+
+In this paper we will explore the difference in performance of these frameworks with an emphasis on understanding when and why one framework performed better than the other  frameworks. Is the performance result of better algorithm design, implementation, load-balancing, problem formulation, or an appropriate programming model (which can vary significantly between GAS, vertex-centric, or BLAS)?  We will explore performance only using GPU-based frameworks as there are tuning parameters available to take into consideration so that we avoid comparing different programming models on vastly different architectures, such as CPUs.
+% As such to avoid benchmarks on the CPU.
+% % Thesepackages leverage the latest capabilities of the GPU hardware and overcome some of thechallenges mentioned above. 
+
+% % These frameworks are the first to go to packages for
+% % standard graph analysis kernels such as pagerank, BFS, SSSP, betweenness centrality
+% % etc.
+
+% Given this background, in this paper we explore several of the best performing GPU-based off-the-shelf graph frameworks. We compare the performance of these
+% frameworks across several algorithms and input graphs. We understand that each
+% framework was designed with different objectives and across a different time-span and
+% our goal is to share practical experience among these high performance GPU frameworks.
+
+We believe this study will help (a) the end-users to determine a framework for solving their problems at hand and (b) the researchers to share the best practices and to evolve towards a common GPU framework that allows the community to design scalable graph analysis algorithms. 
+
+
+The remainder of the paper is organized as follows: Section \ref{sec:gpu-framework} provides an overview of the GPU graph framework; Section \ref{sec:benchmark-method} describes the evaluation methodology for a graph benchmark; Section \ref{sec:experiment-setup} describes our experimental setup; and Section \ref{sec:experiment-results} describes and discusses our experimental results.
+
+
+
+
+
+

@@ -1,0 +1,44 @@
+\subsection{Systems}
+Our experiments are conducted on two NVIDIA GPUs: a V100 GPU and a P100 GPU in six systems of different memory size and interconnection type. Specific details of these GPUs can be found in Table \ref{tab:gpu-cpu-systems}. 
+The P100 is a Pascal based GPU and the V100 is a Volta based GPU. 
+Both the V100 and P100 have two form factors: PCI-E and SXM. PCI-E is the defacto form factor that most consumer GPUs are manufactured. The SXM form factor is equivalent to placing a GPU on a board. The SXM form factor also has multiple NVLink channels allowing GPUs to communicate with other multiple GPUs concurrently. For both the V100 and P100, the SXM form factor GPU is known for outperforming its PCI-E counterpart due to increased frequency and power consumption.
+
+% Each GPU was connected to a different CPU processor. We do not report the CPUs used in our experiments as they are not of significance; specifically, we do not time the transfer to and from the GPU. Instead to ensure that execution times capture the time it takes to run an analytic, we time only sections that are entirely on the GPU side and are part of the analytic procedure.
+% Euna: CPU info added to the table
+
+The effect of CPUs used in our experiments are not significant; specifically, we do not time the transfer to and from the GPU. To ensure that execution times capture the time that it takes to run an analytic, we time only sections that are entirely on the GPU side and are part of the analytic procedure.
+\input{table_systems.tex}
+
+\subsection{Graphs}
+Details of the graphs used in our experiments can be found in the upper part of Table \ref{tab:graphs}. This table covers the number of vertices, edges, and average degree of each graph. For each network, the table also denotes if that network is stored as a directed or undirected graph. Undirected graphs store both directions of each edge. The experiments are executed for both directed and undirected versions of each graph. Thus, if a graph is given as a directed graph, for its undirected version the inverse direction of each edge is added. If that edge already exists, then that duplicate edge is not included. Different frameworks load directed and undirected graphs using different methods; Most of graph frameworks support graph loading features with user parameters. Loading graphs as the original structure(undirected graphs as undirected, directed graph as directed) is not complicated and explained above. We found that Hornet generates a directed graph from an undirected graph by taking the first read edge and ignoring the second edge in the opposite direction while Gunrock ignores "--directed" for loading undirected graphs. 
+%graph data
+\input{table_graph_data}
+
+%see Table \ref{tab:graph-loading} for details on how the Hornet and Gunrock frameworks load graph data.
+% Oded->Euna, you wanted to add some details on how some of the frameworks were dealing with undirected vs. directed internally when they were loading the inputs.
+% [Euna] made it as a table and footnotes
+
+% \begin{table}[htp!]
+% \begin{threeparttable}
+%   \caption{Loading Directed or Undirected Graphs}
+%   \label{tab:graph-loading}
+%   \centering
+%   \begin{tabular}{llll}
+%   \toprule
+%   Graph Type & Loading Parameter & Gunrock & Hornet \\
+%   \midrule
+%   Directed & --directed & directed & directed \\
+%             & --undirected\tnote{1} & undirected & undirected \\
+%   \midrule         
+%   Undirected & --directed & undirected\tnote{2} & directed\tnote{3} \\
+%             & --undirected & undirected & undirected \\
+%   \bottomrule
+%   \end{tabular}
+%       \begin{tablenotes}
+%       \item[1] Gunrock and Hornet both load a directed graph as an undirected graph by duplicating edges in the opposite direction.
+%       \item[2] Gunrock ignores "--directed" for loading undirected graphs.
+%       \item[3] Hornet generates a directed graph from an undirected graph by taking the first read edge and ignoring the second edge in the opposite direction.
+%       \end{tablenotes}
+% \end{threeparttable}
+% \end{table}
+%(data type/ memory footprint/ GPU utilization/ energy consumption?)

@@ -1,0 +1,99 @@
+
+To benchmark the GPU graph frameworks, we have selected five basic graph kernels which are used in a wide range of applications. Specifically, we focus on Triangle Counting (TC, which is used in a wide range of common neighbor explorations) Connected Components (CC), PageRank (PR), and two widely used graph traversal operations: Breadth First Search (BFS) and Betweenness Centrality (BC). This problem set was selected as together they encompass a much larger number of problems. 
+Specifically, triangle counting was selected as it captures the capability to execute a large number of small and imbalanced set intersections to find common neighbors. PageRank and connected components are two analytics that can show the cost of data propagation across a network. PageRank, unlike connected components, typically needs a large number of iterations to converge due to accuracy requirements. BFS and BC are traversal based analytics for finding the distance between a root (or a selected vertex) and the remaining vertices in the graph. Together these algorithms represent a much larger set of application use cases (to name just a few): all-pair shortest-paths, s-t connectivity, single-source shortest path, and closeness centrality. While BC requires doing a BFS as part of its computation, these two problems are very different as we will summarize below. 
+
+
+% Due to different capabilities of different graph frameworks, not all graph kernels are tested. Graphs are loaded in each framework's preferred layout. That is, using CSR or similar formats to produce the best performance in each graph framework. Sometimes, converting or transforming graphs will provide an optimization for particular algorithms. This optimization time is not included in the recorded run time in our evaluation. %GAP has 64 distinct source for BFS, SSSP and 16 for BC but we used only the largest degree node as a source. 
+% We conducted experiments starting with the largest degree node in traversing algorithms on both directed and undirected graphs with unweighted edges.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Triangle Counting
+\subsection{Triangle Counting}
+Counting triangles in a graph is the operation in which common neighbors of two vertices are found. Specifically, for each edge, $(u,v)$, in the graph we find the number of common neighbors that they have. Further, as the edge between $u$ and $v$ already exists, by finding common neighbors in the format of edges $(u,w)$ and $(v,w)$ we are in fact finding triangles. 
+Counting triangles or finding common neighbors represents a much large set of problems: clustering coefficients, Jaccard indices, K-Trusses, clique-finding and much more.
+
+Finding triangles in a graph can be accomplished in numerous manners: enumerating over all node triplets, matrix multiplications, and set intersections (both sorted and unsorted approaches exist). The upper-bound time complexity of each of these approaches vary quite a bit, yet the actual time it takes to find triangles is very data dependent. Numerous optimization's have been applied to the problem of triangle counting over the last two decades, including: avoiding counting the same triangle multiple times, load-balancing at different thread granularities, different approaches for conducting the set intersection. 
+
+
+% vertex for two neighboring vertices. This algorithm returns the number of triangles in a graph for a directed graph's case (with no cycles) and three times of the actual number of triangles in a undirected graph case.
+% \begin{equation}
+% TC = \sum_{u,v,r \in G}{E_{uv}\wedge  E_{vr}\wedge  E_{rv}} 
+% \end{equation}
+% The BLAS expression is counting non-zero elements, where they appear in both adjacent matrix and matrix of two hops.
+% \begin{equation}
+% nnz(A \cap A^{2}) = 2
+% \end{equation}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Connected Component
+\subsection{Connected Component}
+The Connected Component(CC) algorithm (sometimes referred to as  ``Union Find'') finds the maximal sets of connected vertices in undirected graphs such that each vertex is reachable from any vertex in that set. A serial form of the CC algorithm can be computed using a depth-first search(DFS) or Breadth-first search(BFS). The low computational requirements of this problem makes parallelizing it computationally challenging. Parallel algorithms are typically based on either a slightly modified parallel BFS or through ``label propagation''. Additional details on parallel BFS can be found in Section \ref{subsec:bfs}, though the modifications made to BFS are minimal. Instead of storing the distance to the root, we store the root itself.  
+
+In contrast, for the label propagation approach, initially all vertices in the graph are assigned their own label. In each iteration of the label propagation, each vertex can update its own component id by that of the component id of its neighbors. The iterations work in a bulk-synchronous like manner. The connected components of the graph are considered to have been found once no changes are made by all the vertices in the graph. Typically, the number of iterations is limited by the diameter of the graph, $dia$, though in a parallel execution there are numerous ways to cut this time complexity down to $log(dia)$.
+
+% Hopcroft and Tarjan’s algorithm\cite{HopcroftTarjan} is one of the first to describe a serial connected-components algorithm.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PageRank
+\subsection{PageRank}
+PageRank is a link analysis method used to assess the relative importance vertices in a graph based on the number of relative number of random walks that go through the vertices. By default, the PageRank algorithm is the stationary distribution of a random walk which has a damping factor ${d}$ probability to jump to a random node in a graph, and ($1-{d}$) probability to choose one of connected edges(outgoing edges in directed graphs) from the current node. Unless the graph is regular and cyclic, then the PageRank value typically converges to a final value. PageRank is computed in an iterative manner such that the next PageRank value of a vertex is dependent on the PageRank values of the past iteration. Thus, PageRank also works in a bulk synchronous manner similar to connected components. Another similarity with connected components is the fact that the values slowly propagate in the graph. However, unlike connected components where the propagation is in both directions, in PageRank the propagation is weighted and is in one direction (incoming edges).
+
+In the iterative method, PageRank is computed as follows (where $t$ represents the iteration):
+
+\begin{equation}
+\label{equ:pagerank}
+PR^{t+1}(v) = \frac{(1-d)}{|V|} + d\sum_{u\in adj(v)} \frac{PR^t(u)}{out\_degree(u)}
+\end{equation}
+
+${d}$ is the damping factor which is typically set around 0.85 and it is a compromise between accuracy and convergence rate. Furthermore, convergence of PageRank values can be determined in different manners and are application dependent.
+% Each frameworks have different implementation in conditions for terminating computation for trade-off of efficiency and accuracy. %For example, the default maximum iteration number is set to 50 in Hornet and Gunrock while it is 200 in cuGraph. Also, the implementations vary in the residual threshold for determining if PR values are converged by comparing the PR value difference between previous iteration and current iteration. Gunrock checks each vertex individually while count the accumulated residuals on all vertices in a graph in Hornet. cuGraph measure the euclidean distance in the graph.
+
+% [Euna] sparse matrix expression (BLAS).. fix.. directed/undirected
+%\begin{equation}
+%PR_{t+1} = r1 + (1-r)A^{t} PR_{t}^{~}
+%(I-\alpha A^TD-1)x = (1-\alpha)v
+%\end{equation}
+
+The linear algebra expression for PageRank is as below \cite{7529953}:
+\begin{equation}
+    (I - \alpha A^T D^{-1})x = (1 - \alpha)v
+\end{equation}
+
+$A$ is an adjacent matrix, $D$ is a diagonal matrix of out-degree edges, $x$ is the PageRank vector, $v$ is a vector having $1/|V|$ as elements and $\alpha$ is teleportation constant (a.k.a $d$, damping factor)
+%, which has the same functionality as $d$ in equation (\ref{equ:pagerank}).
+
+Due to the intensive computation required for PageRank computation, the performance is highly affected by the hardware support and how the hardware is used. FPGA is used for the accelerating the PageRank processing \cite{zhou2017design}, and optimization considering cache sizes and data blocks for PageRank computation to increase the locality is examined in \cite{7967173}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BFS
+\subsection{Breadth-first Search}
+\label{subsec:bfs}
+%finds the distance of all vertices to a root in an unweighted graph. BFS is an important building block for numerous graph based problems
+Breadth-first search (BFS) is one of the most basic algorithms in graph analysis. A BFS traversal starts from a root (sometimes referred to as a source) vertex and finds all its neighbors while marking their distance (to ensure that they are not traversed again). This operation is repeated until all the vertices reachable from the root have been found. This is commonly referred to as the top-down approach.
+BFS can also be implemented using the bottom-up and direction optimizing approach suggested by Beamer \emph{et al.} \cite{beamer2012direction}. This bottom-up approach reduces the number of random memory operations by avoiding unnecessary traversals. 
+
+
+BFS is very sensitive to workload imbalance and memory operations. Specifically, in massively multi-threaded systems it is very important to ensure that work is available to all threads. The randomness of the traversals also makes the memory accesses harder than traditional sequential memory operations. Given the low computational effort required by each traversal, BFS is a great benchmark for testing the IO capabilities of a system. It is for this reason that the Graph500 \cite{graph500} benchmark was created. Graph500 benchmark does not state how the traversal should be implemented, rather it focuses on the number of traversals per second that can be executed. Most scalable BFS implementations use either a BLAS or vertex-centric formulation. While GAS based formulations are possible, their performance is typically below desirable. 
+
+
+% Most of graph framework have a feature to assign any vertex as a root while the default setting is distinct depending on their design decision. For example, the default root is vertex 0 in Gunrock while it is the largest degree node in Hornet. In cuGraph, users need to assign a corresponding node as a root if they want to have starting node rather than node 0.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Betweenness Centrality
+\subsection{Betweenness Centrality}
+The Betweenness Centrality, BC, of a vertex is the fraction of shortest paths in the graph that go through this vertex over the total number of shortest paths in the graph \cite{Freeman1977}. Formally, this is defined as follows: $\sigma_{st}$ is the number of shortest paths from a vertex $s$ to a vertex $t$, and $\sigma_{st}(v)$ is the number of shortest paths from $s$ to $t$ through a vertex $v$. For a vertex $v$, the BC $C_B(v)$ is
+\begin{equation}
+C_B(v) = \sum_{s \neq t \neq v}\frac{\sigma_{st}(v)}{\sigma_{st}} \\
+\end{equation}
+
+Brandes \cite{Brandes2001} showed an efficient algorithm, with the best known complexity bounds, for computing the BC values in $O(V\cdot (V+E))$ time. Brandes's algorithm  consists of two phases (executed for each vertex in the graph),  a BFS traversal executed from each vertex (root) followed by a second phase called the dependency accumulation phase. Readers are referred to \cite{Brandes2001} for additional detail. The BFS phase is not able to benefit from the Direction-Optimized BFS \cite{beamer2012direction} as it requires traversing ``all'' shortest paths and not ``a'' single path.
+
+%BC has received a significant amount of interest as it adds
+BC has received significant attention for its much larger computational elements  than that found in BFS. Specifically, BC has both the BFS and dependency accumulation phases where the latter requires floating point operations (multiplication and additions), as well it requiring synchronization through the use of atomic instructions \cite{MadduriBaderParallel,green2013faster}. 

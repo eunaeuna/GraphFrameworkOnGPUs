@@ -1,0 +1,126 @@
+We chose five of the most fundamental algorithms with varying characteristics,  which are commonly used in various applications and research publications
+% such as social network study, scientific analysis and in many growing areas 
+such as finding connected components, finding neighbors, subgraph matching, computing centrality scores, finding shortest path, and clustering\cite{Sahu:2017:ULG:3186728.3164139}. This choice of algorithms allows for the examination of the processing capabilities of graph analytic kernels such as iteration (PR), traversal (BFS, BC), statistic computation (TC), and so on.
+
+Due to different capabilities of different graph frameworks, not all graph kernels are tested. Graphs are loaded in each framework's preferred layout. That is, using CSR or similar formats to produce the best performance in each graph framework. Sometimes, converting or transforming graphs will provide an optimization for particular algorithms. This optimization time is not included in the recorded run time in our evaluation. %GAP has 64 distinct source for BFS, SSSP and 16 for BC but we used only the largest degree node as a source. 
+We conducted experiments starting with the largest degree node in traversing algorithms on both directed and undirected graphs with unweighted edges.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BFS
+\subsection{Breadth-first Search}
+\label{subsec:bfs}
+%finds the distance of all vertices to a root in an unweighted graph. BFS is an important building block for numerous graph based problems
+Breadth-first search (BFS) is one of the most basic algorithms in graph analysis. BFS starts from a root(a.k.a source) vertex and traverses all vertices connected to the root and repeats, traversing the connected vertices until reaching the greatest depth in the graph or finding the destination node when it is used to solve a searching problem. In this work, we are more interested in BFS reachability similar to Graph500\cite{graph500} which provides the distance of each node from the root. Suppose a $Graph(V,E)$ with vertices $V$ and edges $E$. The BFS implementation is vertex programming is:
+\begin{equation}
+Distance(v) = \min_{(u,v)\in E}{Distance(u)+1}
+\end{equation}
+The data structure to store the depth of each vertex $Distance[v]$ is initiated with -1 or $\infty$ (unreachable) but Distance[$root$] is 0. The value for $Distance[v]$ of vertices connected to the root will be 1 in the next traversing iteration. The distance value increased by 1 in each traversing round. Visited vertices are often stored in the particular data structure like queue. Any already visited nodes are not supposed to be revisited. BFS computation in BLAS expression is:
+\begin{equation}
+v = A^{t}s 
+\end{equation}
+where A is an adjacent matrix and s is a vector contains the start node(s).
+
+Most of graph framework have a feature to assign any vertex as a root while the default setting is distinct depending on their design decision. For example, the default root is vertex 0 in Gunrock while it is the largest degree node in Hornet. In cuGraph, users need to assign a corresponding node as a root if they want to have starting node rather than node 0.
+
+% \begin{algorithm}[t]
+% \scriptsize
+% 	$Q_{curr} \leftarrow \emptyset$, $Q_{next} \leftarrow \emptyset$\;
+% 	$d [t] \leftarrow \infty$, $t \in V$; $d [r] \leftarrow 0$\;
+%  	enqueue $r \rightarrow Q_{curr}$\;
+%  	$level\leftarrow 1$
+
+% 	\While {$Q_{curr}$ not empty} 
+% 	{
+% 		\For {all neighbor $w$ of $v$ $\emph{\bf parallel}$}
+% 	    {
+% 			\If {$d[w] = \infty$} 
+% 		  	{
+% 		  		$enqueue \, w \rightarrow Q_{next}$\;
+% 				$d[w] \leftarrow d[v] +1$\;
+% 		  	}       
+% 	    }
+%      	$level\leftarrow level+ 1$\;
+%      	$swap(Q_{curr}, Q_{next})$\;
+% 	}
+
+	
+% \caption{Pseudo code for a parallel BFS. Atomics not shown for the sake of simplicity.}
+% \label{alg:pseudo-bfs}
+
+% \end{algorithm}
+
+(addition)
+optimization efforts like
+2. Beamer's bottom up BFS (direction optimized)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% SSSP
+% \subsection{SSSP}
+% SSSP is an algorithm to traverse a graph to find the shortest path from a single source to all other vertices in the graph. If the input graph includes weighted edges, the shortest path will be computed with the minimal sum of the weight of edges on that path. It is possible there exist more than one path with the same distance. SSSP in Hornet is implemented using Bellman-ford algorithm while Gunrock adopted Dijkstra algorithm which can not handle the negative edge weight. cuGraph SSSP is implemented in SPMV kernel.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Pagerank
+\subsection{PageRank}
+PageRank is a link analysis algorithm to assess the relative importance of all vertices in a graph. The baseline PageRank algorithm is the stationary distribution of a random walk which has a damping factor ${d}$ probability to jump to a random node in a graph, and ($1-{d}$) probability to choose one of connected edges(outgoing edges in directed graphs) from the current node. This popularity score typically converges unless the graph is regular and cyclic. The iterative method to compute (normalized) PageRank scores in vertex programming for vertex ${v}$ at iteration $t+1$ in a graph $G(V,E)$ is: 
+
+\begin{equation}
+PR^{t+1}(v) = \frac{(1-d)}{|V|} + d\sum_{u\in adj(v)} \frac{PR^t(u)}{out\_degree(u)}
+\end{equation}
+
+$PR(v)$ and $PR(u)$ are the PageRank value of each node ${v}$ and ${u}$ when $\textit{v}$ is arbitrary node in the graph and ${u}$ is one of neighbor nodes which has a edge from ${v}$. The number of all nodes in the graph denoted as {$|V|$} and ${d}$ is a damping factor which is typically set around 0.85 for a compromise between accuracy and convergence rate. Each frameworks have different implementation in conditions for terminating computation for trade-off of efficiency and accuracy. %For example, the default maximum iteration number is set to 50 in Hornet and Gunrock while it is 200 in cuGraph. Also, the implementations vary in the residual threshold for determining if PR values are converged by comparing the PR value difference between previous iteration and current iteration. Gunrock checks each vertex individually while count the accumulated residuals on all vertices in a graph in Hornet. cuGraph measure the euclidean distance in the graph.
+
+[Euna] sparse matrix expression (BLAS).. fix.. directed/undrected
+\begin{equation}
+%P_{t+1} = r1 + (1-r)A^{t} P_{t}^{~}
+(I-\alpha A^TD-1)x = (1-\alpha)v
+\end{equation}
+
+
+ (addition)
+ optimization efforts like
+ 1. FPGA PR from USC, HPEC '14
+ 2. Beamer's blocking propagation
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Betweenness Centrality
+\subsection{Betweenness Centrality}
+The Betweenness Centrality, BC, of a vertex is the fraction of shortest paths in the graph that go through this vertex over the total number of shortest paths in the graph \cite{Freeman1977}. Formally, this is defined as follows: $\sigma_{st}$ is the number of shortest paths from a vertex $s$ to a vertex $t$, and $\sigma_{st}(v)$ is the number of shortest paths from $s$ to $t$ through a vertex $v$. For a vertex $v$, the BC $C_B(v)$ is
+\begin{equation}
+C_B(v) = \sum_{s \neq t \neq v}\frac{\sigma_{st}(v)}{\sigma_{st}} \\
+\end{equation}
+
+Brandes \cite{Brandes2001} showed an efficient algorithm, with the best known complexity bounds, for computing the BC values in $O(V\cdot (V+E))$ time. Brandes's algorithm  consists of two phases (executed for each vertex in the graph),  a BFS traversal executed from each vertex (root) followed by a second phase called the dependency accumulation phase. Readers are referred to \cite{Brandes2001} for additional detail. The BFS phase is not able to benefit from the Direction-Optimized BFS \cite{beamer2012direction} as it requires traversing ``all'' shortest paths and not ``a'' single path.
+
+Approximation techniques, such as \cite{BaderApproxBC} and \cite{geisberger2008better}, take different approaches on selecting the subset of roots used in the computation.  The first approach, \cite{BaderApproxBC}, pre-selects the roots using a random sampling; whereas  \cite{geisberger2008better} selection of the roots is done one at a time following each iteration with the goal of reducing the errors in the approximate BC values. The time complexity for both of these is the same and is $O(K\cdot (V+E))$, where $K$ is the number of roots used in the approximation. This is significantly lower, when  $K << |V|$, than the time complexity for exact BC which is $O(V\cdot (V+E))$ . 
+
+Significant work has gone into optimizing betweenness centrality computations. This includes numerous algorithmic optimizations \cite{green2013faster,sariyuce2013betweenness}, parallelization schemes \cite{MadduriBaderFirst,MadduriBaderParallel,Buluc01112011,edmonds2010space,solomonik2016betweenness,mclaughlin2014scalable}, as well developing dynamic graph algorithms \cite{GreenStreaming,kasincremental,lee2012qube}. Of these, \cite{mclaughlinscalable} and \cite{sariyuce2013betweenness}, target the GPU. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Connected Component
+\subsection{Connected Component}
+The Connected Component(CC) algorithm(a.k.a Union Find) finds maximal sets of connected vertices in undirected graphs such that each vertex is reachable from any vertex in that set. A serial form of the CC algorithm can be computed using a depth-first search(DFS) or Breadth-first search(BFS), and there are efficient parallel implementations that are
+based on the BFS approach of ``label propagation''. Initially all vertices in the graph are assigned their own label. The vertex labels are updated with the smallest label among its neighbors iteratively until no more updates occur. Hopcroft and Tarjan’s algorithm\cite{HopcroftTarjan} is one of the first to describe a serial connected-components algorithm.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Triangle Counting
+\subsection{Triangle Counting}
+Counting triangles in a graph performs finding a common vertex for two neighboring vertices. This algorithm returns the number of triangles in a graph for a directed graph's case (with no cycles) and three times of the actual number of triangles in a undirected graph case.
+\begin{equation}
+TC = \sum_{u,v,r \in G}{E_{uv}\wedge  E_{vr}\wedge  E_{rv}} 
+\end{equation}
+The BLAS expression is counting non-zero elements, where they appear in both adjacent matrix and matrix of two hops.
+\begin{equation}
+nnz(A \cap A^{2}) = 2
+\end{equation}
+\paragraph{Computational Approaches}
+Finding triangles in a graph can be accomplished in numerous manners: enumerating over all node triplets, matrix multiplications, and set intersections (both sorted and unsorted approaches exist). The upper-bound time complexity of each of these approaches vary quite a bit, yet the actual time it takes to find triangles is very data dependent. 
+
+\paragraph{Algorithmic Optimization}
+Numerous computational optimization can be applied to triangle counting
+algorithms.  For example, Green \& Bader \cite{GreenVCCC} present a combinatorial optimization that that offers a better complexity bound.
+Shun \& Tangwongsan \cite{shun2015multicore}, Polak  \cite{polak2015counting}, and Pearce \cite{pearce2017triangle} show an alternative approach to reduce the computational requirements by finding triangles in a directed graph rather than the undirected graph.
+To improve on the above, loading balancing the work per thread can also help improve performance \cite{GreenPARCC,green-tri-lrb}. The recent approach in \cite{green-tri-lrb} shows Logarithmic Radix Binning, a method for load-balancing triangle counting for SIMD instruction sets (where the vector lanes are also load-balanced). As such it was naturally extended the GPU and its SIMT programming model in \cite{green-tri-lrb-gpu}. LRB on the GPU  is currently one of the fastest GPU algorithms available and is competitive with the performance of \cite{bisson2017static,huang-2018,bisson-update}. All these outperform the first triangle counting algorithms on the GPU: Leist \emph{et al.}\ \cite{leist2011gpgpu}, Green \emph{et al.}\ \cite{green2014fast}, Wang \emph{et al.}\cite{wang2016comparative-triangles}.
+
+The triangle counting algorithm in Hornet is the algorithm in \cite{green-tri-lrb-gpu,green-tri-lrb}. The triangle counting algorithm algorithm in nvGraph is \cite{bisson2017static}. Most of the other algorithms are standalone implementations that are not part of a framework.
+
+
